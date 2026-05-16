@@ -27,7 +27,12 @@ async function apiCall(action, data = {}) {
   });
 
   if (!response.ok) throw new Error('HTTP ' + response.status);
-  const text = await response.text();
+
+  // إجبار UTF-8 decoding (Apps Script يرسل UTF-8 لكن بدون charset header)
+  const buffer = await response.arrayBuffer();
+  const decoder = new TextDecoder('utf-8');
+  const text = decoder.decode(buffer);
+
   try {
     return JSON.parse(text);
   } catch (parseErr) {
