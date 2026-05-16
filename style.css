@@ -137,9 +137,10 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background-image: url('assets/welcome-bg.jpg');
-  background-size: cover;
+  background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
+  background-color: #2a1a0e;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -289,9 +290,10 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background-image: url('assets/form-bg.jpg');
-  background-size: cover;
+  background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
+  background-color: #fefcf7;
   padding: calc(180px + env(safe-area-inset-top)) 24px calc(80px + env(safe-area-inset-bottom));
   position: relative;
 }
@@ -393,9 +395,10 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background-image: url('assets/thanks-bg.jpg');
-  background-size: cover;
+  background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
+  background-color: #c8b896;
   position: relative;
   display: flex;
   flex-direction: column;
