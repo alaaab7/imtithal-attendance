@@ -6,89 +6,66 @@
 
 ```
 .
-├── web/                    ← الواجهة الأمامية (Vercel)
-│   ├── index.html          ← صفحة الفورم
-│   ├── admin.html          ← لوحة الأدمن
-│   ├── style.css           ← التصميم
-│   ├── admin.css           ← أنماط الأدمن
-│   ├── app.js              ← منطق الفورم
-│   ├── admin.js            ← منطق الأدمن
-│   ├── config.js           ← رابط API
-│   ├── vercel.json         ← إعدادات Vercel
-│   └── assets/             ← الصور
-│       ├── logo.png
-│       ├── welcome-bg.jpg
-│       ├── form-bg.jpg
-│       └── thanks-bg.jpg
-│
-└── api/
-    └── Code.gs             ← Apps Script API (يُنشر على Google)
+├── index.html          ← صفحة الفورم
+├── admin.html          ← لوحة الأدمن
+├── style.css           ← التصميم
+├── admin.css           ← أنماط الأدمن
+├── app.js              ← منطق الفورم
+├── admin.js            ← منطق الأدمن
+├── config.js           ← رابط API ← عدّله بعد نشر Apps Script
+├── vercel.json         ← إعدادات Vercel
+├── assets/             ← الصور
+├── api/
+│   └── Code.gs         ← Apps Script API (يُنشر على Google)
+└── README.md
 ```
 
 ## 🚀 خطوات النشر
 
-### 1️⃣ Apps Script (الـ Backend)
+### 1️⃣ Apps Script Backend
 
 1. أنشئ Google Sheet جديد
-2. من القائمة: **Extensions → Apps Script**
-3. الصق محتوى `api/Code.gs` في ملف `Code.gs`
+2. **Extensions → Apps Script**
+3. الصق محتوى `api/Code.gs` في الـ `Code.gs`
 4. **Deploy → New deployment → Web app**
    - Execute as: **Me**
    - Who has access: **Anyone**
-5. انسخ **Web app URL**
+5. انسخ Web app URL
 
-### 2️⃣ Vercel (الـ Frontend)
+### 2️⃣ Vercel Frontend
 
-1. ارفع المجلد `web/` على GitHub
-2. في [vercel.com](https://vercel.com)، اربط الـ Repo
-3. **Root Directory**: `web`
-4. اضغط Deploy
+1. ارفع على GitHub: `git push`
+2. [vercel.com](https://vercel.com) → Import Project → Deploy
+3. Vercel سينشر تلقائياً (لا حاجة لإعدادات إضافية)
 
-### 3️⃣ ربط الـ Frontend بـ Backend
+### 3️⃣ ربط Frontend بـ Backend
 
-في ملف `web/config.js`، عدّل:
+في `config.js`:
 ```javascript
-API_URL: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec'
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/YOUR_ID/exec'
+};
 ```
 
 ### 4️⃣ ضبط الموقع الجغرافي
 
-1. افتح `https://your-vercel.app/admin.html`
-2. كلمة المرور: `admin1234`
-3. في قسم "إعدادات موقع التحضير": اضغط "استخدام موقعي الحالي"
-4. اضغط حفظ
+افتح `https://your-vercel.app/admin.html`
+- كلمة المرور: `admin1234`
+- اضغط "استخدام موقعي الحالي" → "حفظ الموقع"
 
-### 5️⃣ إنشاء QR Code
+### 5️⃣ QR Code
 
-استخدم: [qr-code-generator.com](https://www.qr-code-generator.com/)
-
-اللصق: رابط Vercel (مثلاً: `https://imtithal-attendance.vercel.app`)
-
-## ⚙️ تخصيص
-
-### كلمة مرور الأدمن
-في `api/Code.gs`:
-```javascript
-const CONFIG = {
-  ADMIN_PASSWORD: 'كلمة-مرورك-السرية',
-  ...
-};
-```
-
-### الألوان
-في `web/style.css` → `:root { --c-gold, --c-black ... }`
+استخدم [qr-code-generator.com](https://www.qr-code-generator.com/)
+- اللصق: رابط Vercel
 
 ## 📱 التقنيات
 
-- **Frontend**: HTML5, CSS3, Vanilla JS (لا frameworks)
+- **Frontend**: HTML5, CSS3, Vanilla JS
 - **Backend**: Google Apps Script
 - **Storage**: Google Sheets
-- **CDN**: Vercel
-- **التحقق من الموقع**: Browser Geolocation API + Haversine formula
+- **CDN**: Vercel (global edge network)
+- **Geolocation**: Browser API + Haversine formula
 
 ## 🆓 التكلفة
 
-**صفر ريال** - كل الخدمات مجانية:
-- Vercel: Free tier (100GB bandwidth/شهر)
-- Google Apps Script: 20,000 طلب/يوم مجاناً
-- Google Sheets: مجاني للأبد
+**صفر ريال** - كل الخدمات مجانية.
