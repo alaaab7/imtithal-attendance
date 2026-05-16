@@ -45,13 +45,27 @@ function handleRequest(e) {
   try {
     let action, data;
 
-    // POST request مع JSON body
-    if (e && e.postData && e.postData.contents) {
-      const body = JSON.parse(e.postData.contents);
+    // الطريقة 1: POST مع payload في FormData (الطريقة الموصى بها للـ CORS)
+    if (e && e.parameter && e.parameter.payload) {
+      const body = JSON.parse(e.parameter.payload);
       action = body.action;
       data = body;
     }
-    // GET request مع query parameters
+    // الطريقة 2: POST مع JSON body مباشر
+    else if (e && e.postData && e.postData.contents) {
+      try {
+        const body = JSON.parse(e.postData.contents);
+        action = body.action;
+        data = body;
+      } catch (parseErr) {
+        // ربما form-encoded
+        if (e.parameter) {
+          action = e.parameter.action;
+          data = e.parameter;
+        }
+      }
+    }
+    // الطريقة 3: GET مع query parameters
     else if (e && e.parameter) {
       action = e.parameter.action;
       data = e.parameter;

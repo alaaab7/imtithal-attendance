@@ -13,15 +13,27 @@ function escapeHTML(s) {
 }
 
 async function apiCall(action, data = {}) {
+  const payload = JSON.stringify({ action, ...data });
+  const body = new URLSearchParams();
+  body.append('payload', payload);
+
   const response = await fetch(CONFIG.API_URL, {
     method: 'POST',
     mode: 'cors',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, ...data }),
+    cache: 'no-cache',
+    credentials: 'omit',
+    body: body,
     redirect: 'follow'
   });
+
   if (!response.ok) throw new Error('HTTP ' + response.status);
-  return await response.json();
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (parseErr) {
+    console.error('Invalid JSON response:', text.substring(0, 200));
+    throw new Error('استجابة غير صالحة من الخادم');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
