@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم - امتثال</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- شاشة تسجيل الدخول -->
+  <section id="loginScreen" class="admin-login-wrapper">
+    <div class="login-card">
+      <img src="assets/logo.png" alt="امتثال" class="login-logo">
+      <h2 class="login-title">لوحة التحكم</h2>
+      <p class="login-subtitle">أدخل كلمة المرور للدخول</p>
+
+      <input type="password" id="passwordInput" class="input-field-admin" placeholder="كلمة المرور" autocomplete="current-password">
+      <div class="input-error-admin" id="loginError"></div>
+
+      <button class="btn btn-primary btn-block btn-large" id="btnLogin" style="margin-top: 18px;">
+        <span id="btnLoginText">دخول</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- لوحة التحكم -->
+  <section id="dashboard" class="hidden">
+    <div class="admin-container">
+
+      <div class="admin-header">
+        <div class="admin-brand">
+          <img src="assets/logo.png" alt="امتثال">
+          <div>
+            <div class="admin-title">لوحة التحكم - الحضور</div>
+            <div class="admin-subtitle" id="todayLabel">-</div>
+          </div>
+        </div>
+        <div class="admin-actions">
+          <button class="btn-ghost" id="btnRefresh">🔄 تحديث</button>
+          <button class="btn-ghost" id="btnExport">📥 تصدير CSV</button>
+          <button class="btn-ghost" id="btnOpenSheet">📋 فتح الشيت</button>
+          <button class="btn-ghost" id="btnLogout">🚪 خروج</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">حضور اليوم</div>
+          <div class="stat-value" id="statToday">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">إجمالي التسجيلات</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">عدد الشركات</div>
+          <div class="stat-value" id="statCompanies">0</div>
+        </div>
+      </div>
+
+      <!-- إعدادات الموقع -->
+      <div class="location-card">
+        <div class="location-card-header">
+          <div class="location-card-title">
+            <span>📍</span> إعدادات موقع التحضير
+          </div>
+          <div class="location-status" id="locationStatus">
+            <span class="location-status-dot"></span>
+            <span id="locationStatusText">-</span>
+          </div>
+        </div>
+
+        <div class="location-grid">
+          <div class="field-group-admin">
+            <label>خط العرض (Latitude)</label>
+            <input type="text" id="locLat" class="input-field-admin text-mono" placeholder="24.7136">
+          </div>
+          <div class="field-group-admin">
+            <label>خط الطول (Longitude)</label>
+            <input type="text" id="locLng" class="input-field-admin text-mono" placeholder="46.6753">
+          </div>
+          <div class="field-group-admin">
+            <label>نصف القطر (متر)</label>
+            <input type="number" id="locRadius" class="input-field-admin" placeholder="100" min="10" max="5000">
+          </div>
+        </div>
+
+        <div class="location-actions">
+          <button class="btn btn-primary" id="btnSaveLocation">💾 حفظ الموقع</button>
+          <button class="btn-ghost" id="btnUseMyLocation">📍 استخدام موقعي الحالي</button>
+          <button class="btn-ghost" id="btnOpenMap" style="display:none;">🗺️ عرض على الخريطة</button>
+        </div>
+
+        <div class="location-result hidden" id="locationResult"></div>
+
+        <div class="location-help">
+          <strong>كيف تحصل على الإحداثيات:</strong>
+          <ol>
+            <li>اذهب إلى <a href="https://maps.google.com" target="_blank">Google Maps</a></li>
+            <li>اضغط بزر الفأرة الأيمن على المكان المحدد</li>
+            <li>ستظهر الإحداثيات في أعلى القائمة (مثلاً: <span class="text-mono">24.7136, 46.6753</span>)</li>
+            <li>الصقها في الحقلين أعلاه واضغط حفظ</li>
+          </ol>
+          <p>أو اضغط <strong>"استخدام موقعي الحالي"</strong> وأنت في الموقع المطلوب.</p>
+        </div>
+      </div>
+
+      <!-- جدول الحضور -->
+      <div class="table-card">
+        <div class="table-title">حضور اليوم (الأحدث أولاً)</div>
+        <div id="tableContainer">
+          <div class="empty-state">
+            <div class="empty-state-icon">⏳</div>
+            <p>جاري التحميل...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

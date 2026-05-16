@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Old backup files
+apps-script-backup/
+.docs/
+copy.sh
+.claude/
+
+# Plans
+*.plan.md

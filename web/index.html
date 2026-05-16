@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#00080b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>تحضير امتثال</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app">
+
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- ============================================
+         صفحة الترحيب
+         ============================================ -->
+    <section class="screen active" id="screen-welcome">
+      <div class="welcome-screen">
+
+        <div id="locationIndicator" class="location-indicator checking">
+          <span class="location-dot"></span>
+          <span id="locationText">جاري التحقق من الموقع...</span>
+        </div>
+
+        <div class="welcome-middle">
+          <h1 class="welcome-greeting">مرحباً بكم</h1>
+          <div class="welcome-divider"></div>
+          <div class="welcome-info">
+            <div class="welcome-info-title">تنبيه</div>
+            <div>للتحضير يجب أن تكون في الموقع. تأكد من تفعيل خدمة الموقع في جوالك.</div>
+          </div>
+        </div>
+
+        <div class="welcome-actions">
+          <button class="btn btn-primary btn-block btn-large" id="btnStart" disabled>
+            <span id="btnStartText">جاري التحقق...</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+         صفحة الفورم
+         ============================================ -->
+    <section class="screen" id="screen-form">
+      <div class="form-screen">
+        <form id="attendanceForm" autocomplete="on">
+
+          <div class="field-group">
+            <label class="field-label" for="inputName">
+              <span class="required">*</span>
+              الاسم الكامل
+            </label>
+            <input type="text" id="inputName" class="input-field" placeholder="الاسم الثلاثي" autocomplete="name" required>
+            <div class="input-error" id="errorName"></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="inputCompany">
+              <span class="required">*</span>
+              اسم الشركة
+            </label>
+            <input type="text" id="inputCompany" class="input-field" placeholder="اسم شركتك" autocomplete="organization" required>
+            <div class="input-error" id="errorCompany"></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="inputPhone">
+              <span class="required">*</span>
+              رقم الجوال
+            </label>
+            <input type="tel" id="inputPhone" class="input-field" placeholder="05xxxxxxxx" autocomplete="tel" inputmode="numeric" maxlength="10" required>
+            <div class="input-error" id="errorPhone"></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="inputEmail">
+              <span class="required">*</span>
+              البريد الإلكتروني
+            </label>
+            <input type="email" id="inputEmail" class="input-field" placeholder="example@company.com" autocomplete="email" required>
+            <div class="input-error" id="errorEmail"></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="inputJobTitle">
+              <span class="required">*</span>
+              المسمى الوظيفي
+            </label>
+            <input type="text" id="inputJobTitle" class="input-field" placeholder="مسماك الوظيفي" autocomplete="organization-title" required>
+            <div class="input-error" id="errorJobTitle"></div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary btn-block btn-large" id="btnSubmit">
+              <span id="btnSubmitText">تسليم</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- شاشة التحميل -->
+    <section class="screen" id="screen-loading">
+      <div class="status-screen">
+        <div class="spinner"></div>
+        <h2 class="status-title">جاري تسجيل حضورك</h2>
+        <p class="status-message">لحظات من فضلك...</p>
+      </div>
+    </section>
+
+    <!-- صفحة الشكر -->
+    <section class="screen" id="screen-success">
+      <div class="thanks-screen">
+        <div class="thanks-middle">
+          <h1 class="thanks-text">شكراً لكم</h1>
+          <div class="thanks-divider"></div>
+          <p class="thanks-subtitle" id="thanksSubtitle">تم تسجيل حضورك بنجاح</p>
+          <p class="thanks-meta-inline" id="thanksMetaInline">-</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- خارج النطاق -->
+    <section class="screen" id="screen-outside">
+      <div class="status-screen">
+        <div class="status-icon error">📍</div>
+        <h2 class="status-title">أنت خارج موقع التحضير</h2>
+        <p class="status-message" id="outsideMessage">يجب أن تكون داخل نطاق الموقع للتحضير</p>
+        <div class="status-details">
+          <div class="status-details-row">
+            <span class="status-details-label">المسافة الحالية</span>
+            <span class="status-details-value" id="currentDistance">-</span>
+          </div>
+          <div class="status-details-row">
+            <span class="status-details-label">النطاق المسموح</span>
+            <span class="status-details-value" id="allowedDistance">-</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="location.reload()" style="max-width:280px;">إعادة المحاولة</button>
+      </div>
+    </section>
+
+    <!-- خطأ عام -->
+    <section class="screen" id="screen-error">
+      <div class="status-screen">
+        <div class="status-icon error">✕</div>
+        <h2 class="status-title">حدث خطأ</h2>
+        <p class="status-message" id="errorMessage">عذراً، حدث خطأ غير متوقع</p>
+        <button class="btn btn-primary btn-block" onclick="location.reload()" style="max-width:280px;">إعادة المحاولة</button>
+      </div>
+    </section>
+
+    <!-- رفض الموقع -->
+    <section class="screen" id="screen-no-location">
+      <div class="status-screen">
+        <div class="status-icon warning">📍</div>
+        <h2 class="status-title">يلزم السماح بالموقع</h2>
+        <p class="status-message">
+          للتحضير يجب السماح بالوصول إلى موقعك.
+          <br>اذهب إلى إعدادات المتصفح وفعّل خدمة الموقع، ثم أعد تحميل الصفحة.
+        </p>
+        <button class="btn btn-primary btn-block" onclick="location.reload()" style="max-width:280px;">إعادة المحاولة</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
