@@ -25,23 +25,18 @@
     <section class="screen active" id="screen-welcome">
       <div class="welcome-screen">
 
-        <div id="locationIndicator" class="location-indicator checking">
-          <span class="location-dot"></span>
-          <span id="locationText">جاري التحقق من الموقع...</span>
-        </div>
-
         <div class="welcome-middle">
           <h1 class="welcome-greeting">مرحباً بكم</h1>
           <div class="welcome-divider"></div>
           <div class="welcome-info">
             <div class="welcome-info-title">تنبيه</div>
-            <div>للتحضير يجب أن تكون في الموقع. تأكد من تفعيل خدمة الموقع في جوالك.</div>
+            <div>يرجى تعبئة بيانات التحضير بشكل صحيح لإتمام التسجيل.</div>
           </div>
         </div>
 
         <div class="welcome-actions">
-          <button class="btn btn-primary btn-block btn-large" id="btnStart" disabled>
-            <span id="btnStartText">جاري التحقق...</span>
+          <button class="btn btn-primary btn-block btn-large" id="btnStart">
+            <span id="btnStartText">ابدأ ←</span>
           </button>
         </div>
       </div>
@@ -57,19 +52,19 @@
           <div class="field-group">
             <label class="field-label" for="inputName">
               <span class="required">*</span>
-              الاسم الكامل
+              الاسم
             </label>
             <input type="text" id="inputName" class="input-field" placeholder="الاسم الثلاثي" autocomplete="name" required>
             <div class="input-error" id="errorName"></div>
           </div>
 
           <div class="field-group">
-            <label class="field-label" for="inputCompany">
+            <label class="field-label" for="inputIdNumber">
               <span class="required">*</span>
-              اسم الشركة
+              رقم الهوية
             </label>
-            <input type="text" id="inputCompany" class="input-field" placeholder="اسم شركتك" autocomplete="organization" required>
-            <div class="input-error" id="errorCompany"></div>
+            <input type="tel" id="inputIdNumber" class="input-field" placeholder="1xxxxxxxxx" inputmode="numeric" maxlength="10" required>
+            <div class="input-error" id="errorIdNumber"></div>
           </div>
 
           <div class="field-group">
@@ -91,12 +86,12 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label" for="inputJobTitle">
+            <label class="field-label" for="inputWorkCity">
               <span class="required">*</span>
-              المسمى الوظيفي
+              مدينة العمل
             </label>
-            <input type="text" id="inputJobTitle" class="input-field" placeholder="مسماك الوظيفي" autocomplete="organization-title" required>
-            <div class="input-error" id="errorJobTitle"></div>
+            <input type="text" id="inputWorkCity" class="input-field" placeholder="مثال: مكة المكرمة" autocomplete="address-level2" required>
+            <div class="input-error" id="errorWorkCity"></div>
           </div>
 
           <div class="actions">

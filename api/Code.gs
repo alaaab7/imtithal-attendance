@@ -120,8 +120,8 @@ function getPublicConfig() {
 // ============================================================
 
 function submitAttendance(data) {
-  // التحقق من البيانات
-  const required = ['name', 'company', 'phone', 'email', 'jobTitle', 'lat', 'lng'];
+  // التحقق من البيانات المطلوبة (الموقع اختياري)
+  const required = ['name', 'idNumber', 'phone', 'email', 'workCity'];
   for (const field of required) {
     if (!data[field] && data[field] !== 0) {
       return { success: false, error: 'بيانات ناقصة: ' + field };
@@ -129,13 +129,12 @@ function submitAttendance(data) {
   }
 
   const name = String(data.name).trim();
-  const company = String(data.company).trim();
+  const idNumber = String(data.idNumber).trim();
   const phone = String(data.phone).trim();
   const email = String(data.email).trim().toLowerCase();
-  const jobTitle = String(data.jobTitle).trim();
-  const userLat = parseFloat(data.lat);
-  const userLng = parseFloat(data.lng);
-  const accuracy = data.accuracy ? parseFloat(data.accuracy) : null;
+  const workCity = String(data.workCity).trim();
+  const userLat = (data.lat !== null && data.lat !== undefined && data.lat !== '') ? parseFloat(data.lat) : null;
+  const userLng = (data.lng !== null && data.lng !== undefined && data.lng !== '') ? parseFloat(data.lng) : null;
 
   // التحقق من الإيميل
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -143,33 +142,20 @@ function submitAttendance(data) {
   }
 
   // التحقق من الجوال (10 أرقام)
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (cleanPhone.length !== 10) {
+  if (phone.replace(/\D/g, '').length !== 10) {
     return { success: false, error: 'يجب أن يكون رقم الجوال مكون من عشرة أرقام' };
   }
 
-  // إعدادات الموقع
-  const loc = getActiveLocation();
-  if (!loc.isConfigured) {
-    return { success: false, error: 'لم يتم ضبط موقع التحضير بعد. تواصل مع المسؤول.' };
+  // التحقق من رقم الهوية (10 أرقام)
+  if (idNumber.replace(/\D/g, '').length !== 10) {
+    return { success: false, error: 'يجب أن يكون رقم الهوية مكون من عشرة أرقام' };
   }
 
-  // المسافة
-  const distance = haversineDistance(loc.lat, loc.lng, userLat, userLng);
-  const effectiveRadius = loc.radius + (accuracy && accuracy < 200 ? accuracy : 0);
+  // ملاحظة: لا يوجد قيد على الموقع - التحضير متاح من أي مكان
+  // الإحداثيات تُحفظ للسجل فقط إن توفرت
 
-  if (distance > effectiveRadius) {
-    return {
-      success: false,
-      error: 'outside_location',
-      distance: Math.round(distance),
-      allowedRadius: loc.radius,
-      message: 'أنت خارج موقع التحضير. تبعد ' + Math.round(distance) + ' متر عن الموقع المسموح.'
-    };
-  }
-
-  // التحقق من التكرار
-  const duplicate = checkDuplicateToday(email);
+  // التحقق من التكرار (بناءً على رقم الهوية)
+  const duplicate = checkDuplicateToday(idNumber);
 
   // الحفظ في الشيت
   const sheet = getOrCreateSheet();
@@ -178,10 +164,13 @@ function submitAttendance(data) {
   const dateStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
   const timeStr = Utilities.formatDate(now, tz, 'HH:mm:ss');
   const status = duplicate ? 'مكرر' : 'جديد';
+  const locText = (userLat !== null && userLng !== null)
+    ? (userLat.toFixed(6) + ', ' + userLng.toFixed(6))
+    : 'غير متوفر';
 
   sheet.appendRow([
-    now, dateStr, timeStr, name, company, phone, email, jobTitle,
-    userLat, userLng, Math.round(distance), status
+    now, dateStr, timeStr, name, idNumber, phone, email, workCity,
+    locText, status
   ]);
 
   return {
@@ -193,8 +182,7 @@ function submitAttendance(data) {
       time: formatArabicTime(now),
       timestamp: now.toISOString()
     },
-    name: name,
-    distance: Math.round(distance)
+    name: name
   };
 }
 
@@ -263,18 +251,19 @@ function resetLocation(password) {
 // التحقق من التكرار
 // ============================================================
 
-function checkDuplicateToday(email) {
+function checkDuplicateToday(idNumber) {
   const sheet = getOrCreateSheet();
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return null;
 
   const tz = CONFIG.TIMEZONE;
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
-  const data = sheet.getRange(2, 1, lastRow - 1, 12).getValues();
+  const data = sheet.getRange(2, 1, lastRow - 1, 10).getValues();
 
+  // العمود 4 = رقم الهوية (index 4)
   for (let i = data.length - 1; i >= 0; i--) {
     const row = data[i];
-    if (row[1] === today && String(row[6] || '').toLowerCase() === email) {
+    if (row[1] === today && String(row[4] || '').replace(/\D/g, '') === String(idNumber).replace(/\D/g, '')) {
       return { time: row[2], date: row[1] };
     }
   }
@@ -307,18 +296,17 @@ function getOrCreateSheet() {
   if (!sheet) {
     sheet = ss.insertSheet(CONFIG.SHEET_NAME);
     sheet.appendRow([
-      'الطابع الزمني', 'التاريخ', 'الوقت', 'الاسم', 'اسم الشركة',
-      'رقم الجوال', 'الإيميل', 'المسمى الوظيفي', 'خط العرض', 'خط الطول',
-      'المسافة (م)', 'الحالة'
+      'الطابع الزمني', 'التاريخ', 'الوقت', 'الاسم', 'رقم الهوية',
+      'رقم الجوال', 'الإيميل', 'مدينة العمل', 'الموقع', 'الحالة'
     ]);
-    const headerRange = sheet.getRange(1, 1, 1, 12);
+    const headerRange = sheet.getRange(1, 1, 1, 10);
     headerRange.setBackground('#d7a562')
                .setFontColor('#00080b')
                .setFontWeight('bold')
                .setHorizontalAlignment('center');
     sheet.setFrozenRows(1);
     sheet.setRightToLeft(true);
-    [160, 100, 80, 150, 150, 120, 200, 130, 120, 120, 100, 80].forEach((w, i) => {
+    [160, 100, 80, 160, 120, 120, 200, 130, 180, 80].forEach((w, i) => {
       sheet.setColumnWidth(i + 1, w);
     });
   }
@@ -346,28 +334,28 @@ function getStats(password) {
   if (lastRow < 2) {
     return {
       success: true,
-      todayCount: 0, totalCount: 0, companiesCount: 0,
+      todayCount: 0, totalCount: 0, citiesCount: 0,
       todayList: [], today: Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd'),
-      sheetUrl: sheetUrl,
-      location: { lat: loc.lat, lng: loc.lng, radius: loc.radius, isConfigured: loc.isConfigured }
+      sheetUrl: sheetUrl
     };
   }
 
-  const data = sheet.getRange(2, 1, lastRow - 1, 12).getValues();
+  const data = sheet.getRange(2, 1, lastRow - 1, 10).getValues();
   const today = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd');
   let todayCount = 0;
   const todayList = [];
-  const companies = new Set();
+  const cities = new Set();
 
+  // الأعمدة: 0=طابع 1=تاريخ 2=وقت 3=اسم 4=هوية 5=جوال 6=إيميل 7=مدينة 8=موقع 9=حالة
   data.forEach(row => {
     if (row[1] === today) {
       todayCount++;
       todayList.push({
-        time: row[2], name: row[3], company: row[4], phone: row[5],
-        email: row[6], jobTitle: row[7], distance: row[10], status: row[11]
+        time: row[2], name: row[3], idNumber: row[4], phone: row[5],
+        email: row[6], workCity: row[7], status: row[9]
       });
     }
-    if (row[4]) companies.add(String(row[4]).trim().toLowerCase());
+    if (row[7]) cities.add(String(row[7]).trim());
   });
 
   todayList.reverse();
@@ -376,11 +364,10 @@ function getStats(password) {
     success: true,
     todayCount: todayCount,
     totalCount: data.length,
-    companiesCount: companies.size,
+    citiesCount: cities.size,
     todayList: todayList.slice(0, 100),
     today: today,
-    sheetUrl: sheetUrl,
-    location: { lat: loc.lat, lng: loc.lng, radius: loc.radius, isConfigured: loc.isConfigured }
+    sheetUrl: sheetUrl
   };
 }
 

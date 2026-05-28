@@ -57,9 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
   el('btnExport').addEventListener('click', exportCSV);
   el('btnOpenSheet').addEventListener('click', openSheet);
   el('btnLogout').addEventListener('click', logout);
-  el('btnSaveLocation').addEventListener('click', saveLocation);
-  el('btnUseMyLocation').addEventListener('click', useMyLocation);
-  el('btnOpenMap').addEventListener('click', openMap);
 });
 
 async function handleLogin() {
@@ -130,29 +127,9 @@ async function loadStats() {
 function renderDashboard(data) {
   el('statToday').textContent = data.todayCount;
   el('statTotal').textContent = data.totalCount;
-  el('statCompanies').textContent = data.companiesCount;
+  el('statCompanies').textContent = data.citiesCount;
   el('todayLabel').textContent = 'تاريخ اليوم: ' + (data.today || '-');
   renderTable(data.todayList || []);
-  renderLocation(data.location);
-}
-
-function renderLocation(loc) {
-  if (!loc) return;
-  el('locLat').value = loc.lat;
-  el('locLng').value = loc.lng;
-  el('locRadius').value = loc.radius;
-
-  const statusEl = el('locationStatus');
-  const statusText = el('locationStatusText');
-  if (loc.isConfigured) {
-    statusEl.className = 'location-status configured';
-    statusText.textContent = 'الموقع مضبوط ✓';
-    el('btnOpenMap').style.display = 'inline-flex';
-  } else {
-    statusEl.className = 'location-status not-configured';
-    statusText.textContent = 'الموقع غير مضبوط — اضبطه الآن';
-    el('btnOpenMap').style.display = 'none';
-  }
 }
 
 function renderTable(list) {
@@ -167,92 +144,20 @@ function renderTable(list) {
       <td>${idx + 1}</td>
       <td>${escapeHTML(row.time)}</td>
       <td>${escapeHTML(row.name)}</td>
-      <td>${escapeHTML(row.company)}</td>
-      <td>${escapeHTML(row.jobTitle)}</td>
+      <td class="text-mono">${escapeHTML(row.idNumber)}</td>
       <td class="text-mono">${escapeHTML(row.phone)}</td>
       <td class="text-mono">${escapeHTML(row.email)}</td>
-      <td>${escapeHTML(String(row.distance))} م</td>
+      <td>${escapeHTML(row.workCity)}</td>
       <td><span class="badge ${badgeClass}">${escapeHTML(row.status)}</span></td>
     </tr>`;
   }).join('');
   container.innerHTML = `<table class="data-table"><thead><tr>
-    <th>#</th><th>الوقت</th><th>الاسم</th><th>الشركة</th><th>المسمى</th><th>الجوال</th><th>الإيميل</th><th>المسافة</th><th>الحالة</th>
+    <th>#</th><th>الوقت</th><th>الاسم</th><th>رقم الهوية</th><th>الجوال</th><th>الإيميل</th><th>مدينة العمل</th><th>الحالة</th>
   </tr></thead><tbody>${rows}</tbody></table>`;
-}
-
-async function saveLocation() {
-  const lat = el('locLat').value.trim();
-  const lng = el('locLng').value.trim();
-  const radius = el('locRadius').value.trim();
-  const result = el('locationResult');
-
-  if (!lat || !lng || !radius) {
-    showLocResult('يرجى تعبئة جميع الحقول', 'error');
-    return;
-  }
-
-  el('btnSaveLocation').disabled = true;
-  el('btnSaveLocation').textContent = '⏳ جاري الحفظ...';
-  result.classList.add('hidden');
-
-  try {
-    const res = await apiCall('saveLocation', { password: currentPassword, lat, lng, radius });
-    el('btnSaveLocation').disabled = false;
-    el('btnSaveLocation').innerHTML = '💾 حفظ الموقع';
-    if (res.success) {
-      showLocResult('✓ تم حفظ الموقع بنجاح', 'success');
-      renderLocation({ ...res.location, isConfigured: true });
-      setTimeout(() => result.classList.add('hidden'), 3000);
-    } else {
-      showLocResult('✕ ' + (res.error || 'فشل الحفظ'), 'error');
-    }
-  } catch (err) {
-    el('btnSaveLocation').disabled = false;
-    el('btnSaveLocation').innerHTML = '💾 حفظ الموقع';
-    showLocResult('✕ فشل الاتصال: ' + err.message, 'error');
-  }
-}
-
-function useMyLocation() {
-  const btn = el('btnUseMyLocation');
-  if (!navigator.geolocation) {
-    showLocResult('متصفحك لا يدعم خدمة الموقع', 'error');
-    return;
-  }
-  btn.disabled = true;
-  btn.innerHTML = '⏳ جاري التحديد...';
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      el('locLat').value = pos.coords.latitude.toFixed(6);
-      el('locLng').value = pos.coords.longitude.toFixed(6);
-      if (!el('locRadius').value) el('locRadius').value = '100';
-      btn.disabled = false;
-      btn.innerHTML = '📍 استخدام موقعي الحالي';
-      showLocResult('✓ تم تحديد موقعك. اضغط حفظ لتثبيته.', 'success');
-    },
-    err => {
-      btn.disabled = false;
-      btn.innerHTML = '📍 استخدام موقعي الحالي';
-      showLocResult('✕ تعذر تحديد موقعك: ' + err.message, 'error');
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-  );
-}
-
-function openMap() {
-  const lat = el('locLat').value;
-  const lng = el('locLng').value;
-  if (lat && lng) window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
 }
 
 function openSheet() {
   if (currentData && currentData.sheetUrl) window.open(currentData.sheetUrl, '_blank');
-}
-
-function showLocResult(msg, type) {
-  const r = el('locationResult');
-  r.textContent = msg;
-  r.className = 'location-result ' + type;
 }
 
 function exportCSV() {
@@ -260,8 +165,8 @@ function exportCSV() {
     alert('لا يوجد بيانات للتصدير');
     return;
   }
-  const headers = ['الوقت', 'الاسم', 'الشركة', 'المسمى الوظيفي', 'الجوال', 'الإيميل', 'المسافة (م)', 'الحالة'];
-  const rows = currentData.todayList.map(r => [r.time, r.name, r.company, r.jobTitle, r.phone, r.email, r.distance, r.status]);
+  const headers = ['الوقت', 'الاسم', 'رقم الهوية', 'الجوال', 'الإيميل', 'مدينة العمل', 'الحالة'];
+  const rows = currentData.todayList.map(r => [r.time, r.name, r.idNumber, r.phone, r.email, r.workCity, r.status]);
   const csv = [headers, ...rows]
     .map(row => row.map(cell => '"' + String(cell || '').replace(/"/g, '""') + '"').join(','))
     .join('\n');

@@ -13,7 +13,7 @@ function el(id) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  requestLocation();
+  captureLocationSilently();  // نلتقط الموقع للسجل فقط (بدون قيد)
   bindEvents();
   updateProgress(0);
 });
@@ -64,47 +64,21 @@ async function apiCall(action, data = {}) {
 // Geolocation
 // ============================================================
 
-function requestLocation() {
-  if (!navigator.geolocation) {
-    showLocationError('متصفحك لا يدعم خدمة الموقع');
-    return;
-  }
+// نلتقط الموقع بصمت للسجل فقط - بدون أي قيد أو حظر
+function captureLocationSilently() {
+  if (!navigator.geolocation) return;
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       state.coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       state.accuracy = pos.coords.accuracy;
-
-      const indicator = el('locationIndicator');
-      indicator.classList.remove('checking', 'error');
-      indicator.classList.add('success');
-      el('locationText').textContent = 'تم تحديد موقعك ✓';
-
-      setTimeout(() => indicator.classList.add('hidden-fade'), 1500);
-
-      el('btnStart').disabled = false;
-      el('btnStartText').textContent = 'ابدأ ←';
     },
     (err) => {
-      console.error('Geolocation error:', err);
-      if (err.code === err.PERMISSION_DENIED) {
-        switchScreen('no-location');
-      } else {
-        showLocationError('تعذر تحديد موقعك');
-      }
+      // لا نمنع المستخدم - التحضير متاح من أي مكان
+      console.log('Location not available (optional):', err.message);
     },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
   );
-}
-
-function showLocationError(msg) {
-  const indicator = el('locationIndicator');
-  indicator.classList.remove('checking', 'success');
-  indicator.classList.add('error');
-  el('locationText').textContent = msg;
-  el('btnStartText').textContent = 'إعادة المحاولة';
-  el('btnStart').disabled = false;
-  el('btnStart').onclick = () => location.reload();
 }
 
 // ============================================================
@@ -113,7 +87,7 @@ function showLocationError(msg) {
 
 function bindEvents() {
   el('btnStart').addEventListener('click', () => {
-    if (state.coords) switchScreen('form');
+    switchScreen('form');  // متاح من أي مكان - بدون قيد الموقع
   });
 
   el('attendanceForm').addEventListener('submit', (e) => {
@@ -139,6 +113,11 @@ function bindEvents() {
   el('inputPhone').addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
   });
+
+  // رقم الهوية - أرقام فقط (10 أرقام)
+  el('inputIdNumber').addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+  });
 }
 
 // ============================================================
@@ -147,10 +126,10 @@ function bindEvents() {
 
 const VALIDATORS = {
   name:     { val: v => v.length >= 3,                              msg: 'الرجاء إدخال الاسم الكامل (3 أحرف على الأقل)' },
-  company:  { val: v => v.length >= 2,                              msg: 'الرجاء إدخال اسم الشركة' },
+  idNumber: { val: v => /^\d{10}$/.test(v.replace(/\D/g, '')),      msg: 'يجب أن يكون رقم الهوية مكون من عشرة أرقام' },
   phone:    { val: v => /^\d{10}$/.test(v.replace(/\D/g, '')),      msg: 'يجب أن يكون رقم الجوال مكون من عشرة أرقام' },
   email:    { val: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),       msg: 'صيغة الإيميل غير صحيحة' },
-  jobTitle: { val: v => v.length >= 2,                              msg: 'الرجاء إدخال المسمى الوظيفي' }
+  workCity: { val: v => v.length >= 2,                              msg: 'الرجاء إدخال مدينة العمل' }
 };
 
 function lc(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
@@ -190,10 +169,10 @@ function validateForm() {
 function getFormData() {
   return {
     name: el('inputName').value.trim(),
-    company: el('inputCompany').value.trim(),
+    idNumber: el('inputIdNumber').value.trim(),
     phone: el('inputPhone').value.trim(),
     email: el('inputEmail').value.trim(),
-    jobTitle: el('inputJobTitle').value.trim()
+    workCity: el('inputWorkCity').value.trim()
   };
 }
 
@@ -228,17 +207,14 @@ function updateProgress(pct) {
 // ============================================================
 
 async function submitForm() {
-  if (!state.coords) {
-    showError('تعذر تحديد موقعك');
-    return;
-  }
   switchScreen('loading');
 
   const data = getFormData();
   const payload = {
     ...data,
-    lat: state.coords.lat,
-    lng: state.coords.lng,
+    // الموقع اختياري - للسجل فقط (null لو ما توفر)
+    lat: state.coords ? state.coords.lat : null,
+    lng: state.coords ? state.coords.lng : null,
     accuracy: state.accuracy
   };
 
